@@ -1,6 +1,6 @@
 const Contest = require("../models/contest.model");
 
-// New endpoint: Upcoming contests (endTime is in the future)
+// upcoming contests (endTime is in the future)
 exports.getUpcomingContests = async (req, res) => {
     try {
         const now = new Date();
@@ -12,7 +12,7 @@ exports.getUpcomingContests = async (req, res) => {
     }
 };
 
-// New endpoint: Past contests (endTime is in the past)
+// past contests (endTime is in the past)
 exports.getPastContests = async (req, res) => {
     try {
         const now = new Date();

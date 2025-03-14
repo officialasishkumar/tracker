@@ -20,7 +20,7 @@ router.get("/manual-fetch", async (req, res) => {
     }
 });
 
-// New endpoints for upcoming and past contests
+// endpoints for upcoming and past contests
 router.get("/upcoming", contestController.getUpcomingContests);
 router.get("/past", contestController.getPastContests);
 router.get("/solutions", contestController.getContestsWithSolution);
