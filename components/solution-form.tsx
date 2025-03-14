@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import type { Contest } from "@/lib/types"
 import { Button } from "./ui/button"
 import { Card } from "./ui/card"
@@ -23,15 +23,24 @@ interface SolutionFormProps {
   contests: Contest[]
 }
 
-export default async function SolutionForm() {
+export default function SolutionForm() {
   const [selectedContest, setSelectedContest] = useState<string>("")
   const [youtubeUrl, setYoutubeUrl] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState("")
+  const [contests, setContests] = useState<Contest[]>([])
 
-  const pastContests = await fetchPastContests();
-  const contests = pastContests.filter((contest) => new Date(contest.endTime) < new Date())
+  useEffect(() => {
+    async function loadContests() {
+      const pastContests = await fetchPastContests()
+      const validContests = pastContests.filter(
+        (contest: Contest) => new Date(contest.endTime) < new Date()
+      )
+      setContests(validContests)
+    }
+    loadContests()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
