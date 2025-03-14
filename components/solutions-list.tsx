@@ -1,0 +1,61 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { getAllSolutions } from "@/lib/data"
+import type { Solution } from "@/lib/types"
+import { motion } from "framer-motion"
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
+import YoutubeThumbnail from "./youtube-thumbnail"
+import { getPlatformColor, getPlatformIcon } from "@/lib/utils"
+import { Badge } from "./ui/badge"
+
+export default function SolutionsList() {
+  const [solutions, setSolutions] = useState<Solution[]>([])
+
+  useEffect(() => {
+    const fetchedSolutions = getAllSolutions()
+    setSolutions(fetchedSolutions)
+  }, [])
+
+  if (solutions.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <h3 className="text-xl font-medium text-muted-foreground">No solutions available yet</h3>
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {solutions.map((solution, index) => {
+        const PlatformIcon = getPlatformIcon(solution.contest.platform)
+        const platformColor = getPlatformColor(solution.contest.platform)
+
+        return (
+          <motion.div
+            key={solution.contestId}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.1 }}
+          >
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-lg">{solution.contest.title}</CardTitle>
+                  <Badge className="text-white" style={{ backgroundColor: platformColor }}>
+                    <PlatformIcon className="mr-1 h-3 w-3" />
+                    {solution.contest.platform}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <YoutubeThumbnail videoId={solution.youtubeId} />
+              </CardContent>
+            </Card>
+          </motion.div>
+        )
+      })}
+    </div>
+  )
+}
+
