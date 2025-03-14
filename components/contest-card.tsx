@@ -12,20 +12,21 @@ import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import YoutubeThumbnail from "./youtube-thumbnail"
 import { getSolutionForContest } from "@/lib/data"
-
 interface ContestCardProps {
-  contest: Contest
-  showSolution?: boolean
+  contest: Contest;
+  showSolution?: boolean;
 }
 
 export default function ContestCard({ contest, showSolution = false }: ContestCardProps) {
-  const { bookmarkedContests, toggleBookmark } = useBookmarksContext()
-  const isBookmarked = bookmarkedContests.includes(contest.id)
-  const PlatformIcon = getPlatformIcon(contest.platform)
-  const platformColor = getPlatformColor(contest.platform)
+  const { bookmarkedContests, toggleBookmark } = useBookmarksContext();
+  // Use a unified identifier: if contest.contestId is missing, fallback to contest.id
+  const contestIdentifier = contest.contestId || contest.id;
+  const isBookmarked = Boolean(bookmarkedContests[contestIdentifier]);
+  const PlatformIcon = getPlatformIcon(contest.platform);
+  const platformColor = getPlatformColor(contest.platform);
   // Use startTime for calculating time remaining
-  const timeLeft = getTimeLeft(contest.startTime)
-  const solution = showSolution ? getSolutionForContest(contest.id) : null
+  const timeLeft = getTimeLeft(contest.startTime);
+  const solution = showSolution ? getSolutionForContest(contest.id) : null;
 
   return (
     <Card className="contest-card h-full flex flex-col">
@@ -37,10 +38,12 @@ export default function ContestCard({ contest, showSolution = false }: ContestCa
           </Badge>
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={() => toggleBookmark(contest.id)}
+            onClick={() => toggleBookmark(contestIdentifier)}
             className="text-muted-foreground hover:text-destructive focus:outline-none"
           >
-            <Heart className={cn("h-5 w-5 transition-all", isBookmarked && "fill-destructive text-destructive")} />
+            <Heart
+              className={cn("h-5 w-5 transition-all", isBookmarked && "fill-destructive text-destructive")}
+            />
           </motion.button>
         </div>
       </CardHeader>
@@ -49,21 +52,15 @@ export default function ContestCard({ contest, showSolution = false }: ContestCa
         <div className="flex flex-col text-muted-foreground text-sm space-y-1">
           <div className="flex items-center">
             <CalendarClock className="h-4 w-4 mr-2 flex-shrink-0" />
-            <span>
-              Start: {new Date(contest.startTime).toLocaleString()}
-            </span>
+            <span>Start: {new Date(contest.startTime).toLocaleString()}</span>
           </div>
           <div className="flex items-center">
             <CalendarClock className="h-4 w-4 mr-2 flex-shrink-0" />
-            <span>
-              End: {new Date(contest.endTime).toLocaleString()}
-            </span>
+            <span>End: {new Date(contest.endTime).toLocaleString()}</span>
           </div>
           <div className="flex items-center">
             <CalendarClock className="h-4 w-4 mr-2 flex-shrink-0" />
-            <span>
-              Duration: {(contest.duration / 3600).toFixed(2)} hours
-            </span>
+            <span>Duration: {(contest.duration / 3600).toFixed(2)} hours</span>
           </div>
         </div>
 
@@ -93,5 +90,5 @@ export default function ContestCard({ contest, showSolution = false }: ContestCa
         </Button>
       </CardFooter>
     </Card>
-  )
+  );
 }

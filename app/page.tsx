@@ -4,6 +4,7 @@ import UpcomingContests from "@/components/upcoming-contests"
 import PastContests from "@/components/past-contests"
 import FilterBar from "@/components/filter-bar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import BookmarksPage from "@/components/bookmarks-page"
 
 export default function Home() {
   return (
@@ -40,7 +41,9 @@ export default function Home() {
 
           <TabsContent value="bookmarked" className="mt-0">
             <Suspense fallback={<div className="h-[300px] flex items-center justify-center">Loading bookmarks...</div>}>
-              <UpcomingContests bookmarkedOnly={true} />
+              <BookmarksPage />
+              {/* <UpcomingContests bookmarkedOnly={true} />
+              <PastContests bookmarkedOnly={true} /> */}
             </Suspense>
           </TabsContent>
         </Tabs>

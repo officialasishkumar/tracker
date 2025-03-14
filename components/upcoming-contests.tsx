@@ -25,10 +25,10 @@ export default function UpcomingContests({ bookmarkedOnly = false }: { bookmarke
             selectedPlatforms.includes(contest.platform)
           );
         }
-
+        
         if (bookmarkedOnly) {
           fetchedContests = fetchedContests.filter((contest) =>
-            bookmarkedContests.includes(contest.id)
+            Boolean(bookmarkedContests[contest.contestId])
           );
         }
 
