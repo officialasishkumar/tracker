@@ -1,4 +1,3 @@
-// lib/api.ts
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000/api/contests";
 
 export async function fetchUpcomingContests() {
@@ -34,6 +33,13 @@ export async function updateContestSolution(contestId: string, solutionUrl: stri
         body: JSON.stringify({ solution: solutionUrl }),
     });
     if (!res.ok) throw new Error("Failed to update contest solution");
+    return await res.json();
+}
+
+// New endpoint: Fetch all contests from the backend
+export async function fetchAllContests() {
+    const res = await fetch(`${BACKEND_URL}/all`);
+    if (!res.ok) throw new Error("Failed to fetch all contests");
     return await res.json();
 }
 

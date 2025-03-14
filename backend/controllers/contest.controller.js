@@ -74,3 +74,13 @@ exports.updateContestSolution = async (req, res) => {
         return res.status(500).json({ message: "Internal server error." });
     }
 };
+
+exports.getAllContests = async (req, res) => {
+    try {
+        const contests = await Contest.find({});
+        return res.status(200).json(contests);
+    } catch (error) {
+        console.error("Error fetching all contests:", error);
+        return res.status(500).json({ message: "Internal server error." });
+    }
+};

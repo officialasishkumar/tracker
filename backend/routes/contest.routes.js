@@ -24,6 +24,7 @@ router.get("/manual-fetch", async (req, res) => {
 router.get("/upcoming", contestController.getUpcomingContests);
 router.get("/past", contestController.getPastContests);
 router.get("/solutions", contestController.getContestsWithSolution);
+router.get("/all", contestController.getAllContests);
 
 // endpoint to update contest solution URL
 router.post("/:id([0-9a-fA-F]{24})/solution", contestController.updateContestSolution);

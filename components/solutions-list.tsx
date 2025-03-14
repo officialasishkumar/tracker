@@ -36,12 +36,12 @@ export default function SolutionsList() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {solutions.map((solution, index) => {
-        const PlatformIcon = getPlatformIcon(solution.contest.platform);
-        const platformColor = getPlatformColor(solution.contest.platform);
+        const PlatformIcon = getPlatformIcon(solution.platform);
+        const platformColor = getPlatformColor(solution.platform);
 
         return (
           <motion.div
-            key={solution.contestId}
+            key={`bro-${index}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: index * 0.1 }}
@@ -49,10 +49,10 @@ export default function SolutionsList() {
             <Card>
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg">{solution.contest.title}</CardTitle>
+                  <CardTitle className="text-lg">{solution.title}</CardTitle>
                   <Badge className="text-white" style={{ backgroundColor: platformColor }}>
                     <PlatformIcon className="mr-1 h-3 w-3" />
-                    {solution.contest.platform}
+                    {solution.platform}
                   </Badge>
                 </div>
               </CardHeader>
