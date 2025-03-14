@@ -20,6 +20,7 @@ const nextConfig = {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
+    missingSuspenseWithCSRBailout: false,
   },
 }
 
@@ -43,12 +44,6 @@ function mergeConfig(nextConfig, userConfig) {
       nextConfig[key] = userConfig[key]
     }
   }
-}
-
-module.exports = {
-  experimental: {
-    missingSuspenseWithCSRBailout: false,
-  },
 }
 
 export default nextConfig

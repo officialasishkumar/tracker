@@ -48,7 +48,7 @@ export default function Header() {
           <ModeToggle />
 
           <Button asChild variant="default" size="sm" className="hidden md:flex">
-            <Link href="https://github.com" target="_blank">
+            <Link href="https://github.com/officialasishkumar" target="_blank">
               <Code2 className="mr-2 h-4 w-4" />
               <span>GitHub</span>
             </Link>
