@@ -19,18 +19,24 @@ export async function fetchAllSolutions() {
 }
 
 export async function fetchContestById(id: string) {
-    const res = await fetch(`${BACKEND_URL}/${id}`);
+    const res = await fetch(`${BACKEND_URL}/contest`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
+    });
     if (!res.ok) throw new Error("Failed to fetch contest");
     return await res.json();
 }
 
 export async function updateContestSolution(contestId: string, solutionUrl: string) {
-    const res = await fetch(`${BACKEND_URL}/${contestId}/solution`, {
+    const res = await fetch(`${BACKEND_URL}/solution`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ solution: solutionUrl }),
+        body: JSON.stringify({ id: contestId, solution: solutionUrl }),
     });
     if (!res.ok) throw new Error("Failed to update contest solution");
     return await res.json();

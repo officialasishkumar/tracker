@@ -1,15 +1,20 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import type { Contest } from "@/lib/types"
 import { Button } from "./ui/button"
 import { Card } from "./ui/card"
 import { Label } from "./ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select"
 import { Input } from "./ui/input"
-import { addSolution } from "@/lib/data"
+import { updateContestSolution } from "@/lib/api"
 import { motion, AnimatePresence } from "framer-motion"
 import { Check, Loader2 } from "lucide-react"
 
@@ -18,7 +23,7 @@ interface SolutionFormProps {
 }
 
 export default function SolutionForm({ contests }: SolutionFormProps) {
-  const [selectedContest, setSelectedContest] = useState("")
+  const [selectedContest, setSelectedContest] = useState<string>("")
   const [youtubeUrl, setYoutubeUrl] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
@@ -38,37 +43,21 @@ export default function SolutionForm({ contests }: SolutionFormProps) {
       return
     }
 
-    // Extract YouTube ID from URL
-    const youtubeRegex = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/
-    const match = youtubeUrl.match(youtubeRegex)
-
-    if (!match) {
-      setError("Invalid YouTube URL")
-      return
-    }
-
-    const youtubeId = match[1]
-
     setIsSubmitting(true)
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      addSolution({
-        contestId: selectedContest,
-        youtubeId,
-      })
+      // Make the API call to update the contest solution using the MongoDB _id
+      await updateContestSolution(selectedContest, youtubeUrl)
 
       setIsSuccess(true)
-      setSelectedContest("")
+      setSelectedContest("") // Reset the selected contest
       setYoutubeUrl("")
 
       setTimeout(() => {
         setIsSuccess(false)
       }, 3000)
     } catch (err) {
-      setError("Failed to add solution")
+      setError("Failed to update contest solution")
     } finally {
       setIsSubmitting(false)
     }
@@ -79,14 +68,17 @@ export default function SolutionForm({ contests }: SolutionFormProps) {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="contest">Contest</Label>
-          <Select value={selectedContest} onValueChange={setSelectedContest}>
+          <Select
+            value={selectedContest}
+            onValueChange={(contestId) => setSelectedContest(contestId)}
+          >
             <SelectTrigger id="contest">
               <SelectValue placeholder="Select a contest" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="max-h-[13rem]">
               {contests.map((contest) => (
-                <SelectItem key={contest.id} value={contest.id}>
-                  {contest.title} ({contest.platform})
+                <SelectItem key={contest._id} value={contest._id}>
+                  {contest.name} ({contest.platform})
                 </SelectItem>
               ))}
             </SelectContent>
@@ -124,7 +116,7 @@ export default function SolutionForm({ contests }: SolutionFormProps) {
                 className="flex items-center text-green-600 font-medium"
               >
                 <Check className="mr-2 h-5 w-5" />
-                Solution added successfully!
+                Solution updated successfully!
               </motion.div>
             ) : (
               <motion.div
@@ -134,8 +126,10 @@ export default function SolutionForm({ contests }: SolutionFormProps) {
                 exit={{ opacity: 0, scale: 0.8 }}
               >
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {isSubmitting ? "Adding Solution..." : "Add Solution"}
+                  {isSubmitting && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {isSubmitting ? "Updating Solution..." : "Update Solution"}
                 </Button>
               </motion.div>
             )}
@@ -145,4 +139,3 @@ export default function SolutionForm({ contests }: SolutionFormProps) {
     </Card>
   )
 }
-

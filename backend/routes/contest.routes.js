@@ -26,10 +26,7 @@ router.get("/past", contestController.getPastContests);
 router.get("/solutions", contestController.getContestsWithSolution);
 router.get("/all", contestController.getAllContests);
 
-// endpoint to update contest solution URL
-router.post("/:id([0-9a-fA-F]{24})/solution", contestController.updateContestSolution);
-
-// Other endpoints
-router.get("/:id([0-9a-fA-F]{24})", contestController.getContestById);
+router.post("/solution", contestController.updateContestSolution);
+router.post("/contest", contestController.getContestById);
 
 module.exports = router;

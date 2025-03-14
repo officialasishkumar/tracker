@@ -24,9 +24,10 @@ exports.getPastContests = async (req, res) => {
     }
 };
 
+// Updated endpoint: Get contest by id (now retrieves id from request body)
 exports.getContestById = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id } = req.body;
         const contest = await Contest.findById(id);
         if (!contest) {
             return res.status(404).json({ message: "Contest not found." });
@@ -50,8 +51,7 @@ exports.getContestsWithSolution = async (req, res) => {
 
 exports.updateContestSolution = async (req, res) => {
     try {
-        const { id } = req.params;
-        const { solution } = req.body;
+        const { id, solution } = req.body;
 
         if (!solution) {
             return res.status(400).json({ message: "Solution URL is required." });
