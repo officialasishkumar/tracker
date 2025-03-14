@@ -23,7 +23,8 @@ export default function ContestCard({ contest, showSolution = false }: ContestCa
   const isBookmarked = bookmarkedContests.includes(contest.id)
   const PlatformIcon = getPlatformIcon(contest.platform)
   const platformColor = getPlatformColor(contest.platform)
-  const timeLeft = getTimeLeft(contest.date)
+  // Use startTime for calculating time remaining
+  const timeLeft = getTimeLeft(contest.startTime)
   const solution = showSolution ? getSolutionForContest(contest.id) : null
 
   return (
@@ -44,10 +45,26 @@ export default function ContestCard({ contest, showSolution = false }: ContestCa
         </div>
       </CardHeader>
       <CardContent className="flex-grow">
-        <h3 className="font-bold text-lg line-clamp-2 mb-2">{contest.title}</h3>
-        <div className="flex items-center text-muted-foreground text-sm">
-          <CalendarClock className="h-4 w-4 mr-2 flex-shrink-0" />
-          <span>{new Date(contest.date).toLocaleString()}</span>
+        <h3 className="font-bold text-lg line-clamp-2 mb-2">{contest.name}</h3>
+        <div className="flex flex-col text-muted-foreground text-sm space-y-1">
+          <div className="flex items-center">
+            <CalendarClock className="h-4 w-4 mr-2 flex-shrink-0" />
+            <span>
+              Start: {new Date(contest.startTime).toLocaleString()}
+            </span>
+          </div>
+          <div className="flex items-center">
+            <CalendarClock className="h-4 w-4 mr-2 flex-shrink-0" />
+            <span>
+              End: {new Date(contest.endTime).toLocaleString()}
+            </span>
+          </div>
+          <div className="flex items-center">
+            <CalendarClock className="h-4 w-4 mr-2 flex-shrink-0" />
+            <span>
+              Duration: {(contest.duration / 3600).toFixed(2)} hours
+            </span>
+          </div>
         </div>
 
         {!showSolution && timeLeft && (
@@ -78,4 +95,3 @@ export default function ContestCard({ contest, showSolution = false }: ContestCa
     </Card>
   )
 }
-

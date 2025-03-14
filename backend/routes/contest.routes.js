@@ -1,21 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const contestController = require("../controllers/contest.controller");
-const verifyToken = require("../middleware/auth.middleware");
 
-
+// Manual fetch route remains unchanged
 router.get("/manual-fetch", async (req, res) => {
     try {
-        // Import fetch functions from your services
         const { fetchClistContests, fetchCodeforcesContests } = require("../services/fetchContests");
         const { fetchYouTubeSolutions } = require("../services/fetchYouTube");
 
-        // Fetch contests from different platforms manually
         await fetchClistContests("LeetCode");
         await fetchClistContests("CodeChef");
         await fetchCodeforcesContests();
-
-        // Fetch and update YouTube solutions
         await fetchYouTubeSolutions();
 
         return res.status(200).json({ message: "Manual fetch completed successfully." });
@@ -25,19 +20,15 @@ router.get("/manual-fetch", async (req, res) => {
     }
 });
 
+// New endpoints for upcoming and past contests
+router.get("/upcoming", contestController.getUpcomingContests);
+router.get("/past", contestController.getPastContests);
+router.get("/solutions", contestController.getContestsWithSolution);
 
-// GET /api/contests
-router.get("/", contestController.getAllContests);
+// endpoint to update contest solution URL
+router.post("/:id([0-9a-fA-F]{24})/solution", contestController.updateContestSolution);
 
-// GET /api/contests/:id
-router.get("/:id", contestController.getContestById);
-
-// POST /api/contests/:id/bookmark (requires auth)
-router.post("/:id/bookmark", verifyToken, contestController.bookmarkContest);
-
-// DELETE /api/contests/:id/bookmark (requires auth)
-router.delete("/:id/bookmark", verifyToken, contestController.removeBookmark);
-
-
+// Other endpoints
+router.get("/:id([0-9a-fA-F]{24})", contestController.getContestById);
 
 module.exports = router;

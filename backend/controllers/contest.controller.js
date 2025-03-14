@@ -1,12 +1,25 @@
 const Contest = require("../models/contest.model");
-const User = require("../models/user.model");
 
-exports.getAllContests = async (req, res) => {
+// New endpoint: Upcoming contests (endTime is in the future)
+exports.getUpcomingContests = async (req, res) => {
     try {
-        const contests = await Contest.find({});
+        const now = new Date();
+        const contests = await Contest.find({ endTime: { $gte: now } }).sort({ startTime: 1 });
         return res.status(200).json(contests);
     } catch (error) {
-        console.error("Error fetching contests:", error);
+        console.error("Error fetching upcoming contests:", error);
+        return res.status(500).json({ message: "Internal server error." });
+    }
+};
+
+// New endpoint: Past contests (endTime is in the past)
+exports.getPastContests = async (req, res) => {
+    try {
+        const now = new Date();
+        const contests = await Contest.find({ endTime: { $lt: now } }).sort({ startTime: -1 });
+        return res.status(200).json(contests);
+    } catch (error) {
+        console.error("Error fetching past contests:", error);
         return res.status(500).json({ message: "Internal server error." });
     }
 };
@@ -25,50 +38,39 @@ exports.getContestById = async (req, res) => {
     }
 };
 
-exports.bookmarkContest = async (req, res) => {
+exports.getContestsWithSolution = async (req, res) => {
     try {
-        const { id } = req.params; // contest _id in MongoDB
-        const userId = req.user.userId; // from JWT
-
-        // Ensure the contest exists
-        const contest = await Contest.findById(id);
-        if (!contest) {
-            return res.status(404).json({ message: "Contest not found." });
-        }
-
-        // Add contest to user's bookmarks if not already present
-        const user = await User.findById(userId);
-        if (!user.bookmarks.includes(id)) {
-            user.bookmarks.push(id);
-            await user.save();
-        }
-
-        return res.status(200).json({ message: "Contest bookmarked successfully." });
+        const contests = await Contest.find({ solution: { $ne: "" } });
+        return res.status(200).json(contests);
     } catch (error) {
-        console.error("Error bookmarking contest:", error);
+        console.error("Error fetching contests with solutions:", error);
         return res.status(500).json({ message: "Internal server error." });
     }
 };
 
-exports.removeBookmark = async (req, res) => {
+exports.updateContestSolution = async (req, res) => {
     try {
-        const { id } = req.params; // contest _id in MongoDB
-        const userId = req.user.userId; // from JWT
+        const { id } = req.params;
+        const { solution } = req.body;
 
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ message: "User not found." });
+        if (!solution) {
+            return res.status(400).json({ message: "Solution URL is required." });
         }
 
-        // Remove contest from user's bookmarks if present
-        user.bookmarks = user.bookmarks.filter(
-            (bookmarkId) => bookmarkId.toString() !== id
+        // Update the contest solution and lastUpdated timestamp
+        const contest = await Contest.findByIdAndUpdate(
+            id,
+            { solution, lastUpdated: new Date() },
+            { new: true }
         );
-        await user.save();
 
-        return res.status(200).json({ message: "Bookmark removed successfully." });
+        if (!contest) {
+            return res.status(404).json({ message: "Contest not found." });
+        }
+
+        return res.status(200).json(contest);
     } catch (error) {
-        console.error("Error removing bookmark:", error);
+        console.error("Error updating contest solution:", error);
         return res.status(500).json({ message: "Internal server error." });
     }
 };

@@ -3,9 +3,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const connectDB = require("./config/db");
-const authRoutes = require("./routes/auth.routes");
 const contestRoutes = require("./routes/contest.routes");
-const userRoutes = require("./routes/user.routes");
+// Removed: const userRoutes = require("./routes/user.routes");
 const { initCronJobs } = require("./services/cronJobs");
 
 const app = express();
@@ -18,9 +17,7 @@ app.use(express.json());
 connectDB();
 
 // Routes
-app.use("/api/auth", authRoutes);
 app.use("/api/contests", contestRoutes);
-app.use("/api/user", userRoutes);
 
 // Initialize Cron Jobs (fetch contests & YouTube solutions every 14 hours)
 initCronJobs();

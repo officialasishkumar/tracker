@@ -8,7 +8,7 @@ const contestSchema = new mongoose.Schema({
     endTime: { type: Date },
     duration: { type: Number },
     url: { type: String },
-    solutions: [{ type: String }],  // Array of YouTube video links
+    solution: { type: String, default: "" },  // Single YouTube video link for contest solutions
     lastUpdated: { type: Date, default: Date.now }
 });
 

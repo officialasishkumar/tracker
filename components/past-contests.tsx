@@ -1,32 +1,44 @@
-"use client"
+// components/past-contests.tsx
+"use client";
 
-import { useEffect, useState } from "react"
-import { getPastContests } from "@/lib/data"
-import { motion } from "framer-motion"
-import ContestCard from "./contest-card"
-import { useFilterContext } from "@/context/filter-context"
-import type { Contest } from "@/lib/types"
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import ContestCard from "./contest-card";
+import { useFilterContext } from "@/context/filter-context";
+import type { Contest } from "@/lib/types";
+import { fetchPastContests } from "@/lib/api";
 
 export default function PastContests() {
-  const { selectedPlatforms } = useFilterContext()
-  const [contests, setContests] = useState<Contest[]>([])
+  const { selectedPlatforms } = useFilterContext();
+  const [contests, setContests] = useState<Contest[]>([]);
 
   useEffect(() => {
-    let filteredContests = getPastContests()
+    async function loadContests() {
+      try {
+        let fetchedContests: Contest[] = await fetchPastContests();
 
-    if (selectedPlatforms.length > 0) {
-      filteredContests = filteredContests.filter((contest) => selectedPlatforms.includes(contest.platform))
+        if (selectedPlatforms.length > 0) {
+          fetchedContests = fetchedContests.filter((contest) =>
+            selectedPlatforms.includes(contest.platform)
+          );
+        }
+
+        setContests(fetchedContests);
+      } catch (error) {
+        console.error("Error fetching past contests:", error);
+      }
     }
-
-    setContests(filteredContests)
-  }, [selectedPlatforms])
+    loadContests();
+  }, [selectedPlatforms]);
 
   if (contests.length === 0) {
     return (
       <div className="text-center py-12">
-        <h3 className="text-xl font-medium text-muted-foreground">No past contests found with the selected filters</h3>
+        <h3 className="text-xl font-medium text-muted-foreground">
+          No past contests found with the selected filters
+        </h3>
       </div>
-    )
+    );
   }
 
   return (
@@ -49,6 +61,5 @@ export default function PastContests() {
         ))}
       </motion.div>
     </div>
-  )
+  );
 }
-

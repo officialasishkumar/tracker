@@ -17,7 +17,7 @@ async function fetchClistContests(platform) {
         const upcomingData = upcomingResponse.data.objects || [];
 
         // Fetch past contests (limit to 5)
-        const pastUrl = `https://clist.by/api/v2/contest/?resource=${resourceName}&end__lt=${now}&order_by=-start&limit=5`;
+        const pastUrl = `https://clist.by/api/v2/contest/?resource=${resourceName}&end__lt=${now}&order_by=-start&limit=20`;
         const pastResponse = await axios.get(pastUrl, {
             headers: { Authorization: clistApiKey }
         });
@@ -35,6 +35,10 @@ async function fetchClistContests(platform) {
             const duration = c.duration;
             const link = c.href;
 
+            // Try to find an existing contest so that we preserve its solution link
+            const existingContest = await Contest.findOne({ platform, contestId });
+            const existingSolution = existingContest ? existingContest.solution : "";
+
             try {
                 await Contest.findOneAndUpdate(
                     { platform, contestId },
@@ -46,6 +50,7 @@ async function fetchClistContests(platform) {
                         endTime,
                         duration,
                         url: link,
+                        solution: existingSolution, // preserve any existing YouTube solution link
                         lastUpdated: new Date()
                     },
                     { upsert: true, new: true }
@@ -60,7 +65,6 @@ async function fetchClistContests(platform) {
         console.error(`Error fetching ${platform} contests from clist:`, error);
     }
 }
-
 
 async function fetchCodeforcesContests() {
     try {
@@ -77,7 +81,7 @@ async function fetchCodeforcesContests() {
             const finished = contests
                 .filter((c) => c.phase === "FINISHED")
                 .sort((a, b) => b.startTimeSeconds - a.startTimeSeconds)
-                .slice(0, 5);
+                .slice(0, 20);
 
             // Combine both upcoming and past contests
             const combinedContests = [...upcoming, ...finished];
@@ -91,6 +95,10 @@ async function fetchCodeforcesContests() {
                 const endTime = new Date(startTime.getTime() + duration * 1000);
                 const url = `https://codeforces.com/contest/${c.id}`;
 
+                // Check for an existing contest and preserve its solution link
+                const existingContest = await Contest.findOne({ platform: "CodeForces", contestId });
+                const existingSolution = existingContest ? existingContest.solution : "";
+
                 try {
                     await Contest.findOneAndUpdate(
                         { platform: "CodeForces", contestId },
@@ -102,6 +110,7 @@ async function fetchCodeforcesContests() {
                             endTime,
                             duration,
                             url,
+                            solution: existingSolution, // keep already stored YouTube solution link
                             lastUpdated: new Date()
                         },
                         { upsert: true, new: true }
@@ -117,7 +126,6 @@ async function fetchCodeforcesContests() {
         console.error("Error fetching CodeForces contests:", error);
     }
 }
-
 
 module.exports = {
     fetchClistContests,

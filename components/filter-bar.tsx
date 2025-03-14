@@ -8,7 +8,8 @@ import { getPlatformIcon } from "@/lib/utils"
 
 export default function FilterBar() {
   const { selectedPlatforms, togglePlatform } = useFilterContext()
-  const platforms = ["Codeforces", "CodeChef", "LeetCode"]
+  // Make sure the platform names exactly match the API response
+  const platforms = ["CodeForces", "CodeChef", "LeetCode"]
 
   return (
     <div className="flex flex-wrap items-center gap-4">
@@ -37,4 +38,3 @@ export default function FilterBar() {
     </div>
   )
 }
-

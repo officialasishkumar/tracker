@@ -12,14 +12,20 @@ import Link from "next/link"
 
 export default function ContestCountdown() {
   const nextContest = getNextContest()
-  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft())
+
+  // Fallback: if contest.startTime doesn't exist, try contest.date.
+  const contestStartTime = nextContest?.startTime || nextContest?.date
+  // Fallback: if contest.name is missing, try contest.title.
+  const contestName = nextContest?.name || nextContest?.title || "Unnamed Contest"
 
   function calculateTimeLeft() {
-    if (!nextContest) return { days: 0, hours: 0, minutes: 0, seconds: 0 }
+    // Ensure we have a valid start time
+    if (!nextContest || !contestStartTime) {
+      return { days: 0, hours: 0, minutes: 0, seconds: 0 }
+    }
+    const difference = new Date(contestStartTime).getTime() - new Date().getTime()
 
-    const difference = new Date(nextContest.date).getTime() - new Date().getTime()
-
-    if (difference <= 0) {
+    if (isNaN(difference) || difference <= 0) {
       return { days: 0, hours: 0, minutes: 0, seconds: 0 }
     }
 
@@ -31,13 +37,15 @@ export default function ContestCountdown() {
     }
   }
 
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft())
+
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft(calculateTimeLeft())
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [nextContest])
+  }, [nextContest, contestStartTime])
 
   if (!nextContest) {
     return (
@@ -71,10 +79,10 @@ export default function ContestCountdown() {
         <CardContent>
           <div className="space-y-6">
             <div>
-              <h3 className="text-xl md:text-2xl font-bold">{nextContest.title}</h3>
+              <h3 className="text-xl md:text-2xl font-bold">{contestName}</h3>
               <div className="flex items-center text-muted-foreground mt-1">
                 <CalendarClock className="h-4 w-4 mr-2" />
-                <span>{new Date(nextContest.date).toLocaleString()}</span>
+                <span>{new Date(contestStartTime).toLocaleString()}</span>
               </div>
             </div>
 
@@ -109,4 +117,3 @@ export default function ContestCountdown() {
     </motion.div>
   )
 }
-
