@@ -1,17 +1,24 @@
 "use client"
 
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import type { Contest } from "@/lib/types"
-import { Badge } from "./ui/badge"
-import { Button } from "./ui/button"
-import { CalendarClock, ExternalLink, Heart } from "lucide-react"
-import Link from "next/link"
-import { getPlatformColor, getPlatformIcon, getTimeLeft } from "@/lib/utils"
-import { useBookmarksContext } from "@/context/bookmarks-context"
-import { motion } from "framer-motion"
-import { cn } from "@/lib/utils"
-import YoutubeThumbnail from "./youtube-thumbnail"
-import { getSolutionForContest } from "@/lib/data"
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import type { Contest } from "@/lib/types";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
+import { CalendarClock, ExternalLink, Heart } from "lucide-react";
+import Link from "next/link";
+import { getPlatformColor, getPlatformIcon, getTimeLeft, cn } from "@/lib/utils";
+import { useBookmarksContext } from "@/context/bookmarks-context";
+import { motion } from "framer-motion";
+import YoutubeThumbnail from "./youtube-thumbnail";
+import { fetchContestById } from "@/lib/api";
+
+function extractYoutubeId(url: string): string | null {
+  const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/;
+  const match = url.match(regex);
+  return match ? match[1] : null;
+}
+
 interface ContestCardProps {
   contest: Contest;
   showSolution?: boolean;
@@ -19,14 +26,32 @@ interface ContestCardProps {
 
 export default function ContestCard({ contest, showSolution = false }: ContestCardProps) {
   const { bookmarkedContests, toggleBookmark } = useBookmarksContext();
-  // Use a unified identifier: if contest.contestId is missing, fallback to contest.id
   const contestIdentifier = contest.contestId || contest.id;
   const isBookmarked = Boolean(bookmarkedContests[contestIdentifier]);
   const PlatformIcon = getPlatformIcon(contest.platform);
   const platformColor = getPlatformColor(contest.platform);
-  // Use startTime for calculating time remaining
   const timeLeft = getTimeLeft(contest.startTime);
-  const solution = showSolution ? getSolutionForContest(contest.id) : null;
+
+  const [contestDetails, setContestDetails] = useState<Contest | null>(null);
+
+  useEffect(() => {
+    async function getContestDetails() {
+      if (showSolution) {
+        try {
+          const details = await fetchContestById(contest._id);
+          console.log("Contest details:", details);
+          setContestDetails(details);
+        } catch (error) {
+          console.error("Error fetching contest details:", error);
+        }
+      }
+    }
+    getContestDetails();
+  }, [showSolution, contest._id]);
+
+  const youtubeId = contestDetails && contestDetails.solution
+    ? extractYoutubeId(contestDetails.solution)
+    : null;
 
   return (
     <Card className="contest-card h-full flex flex-col">
@@ -75,9 +100,9 @@ export default function ContestCard({ contest, showSolution = false }: ContestCa
           </div>
         )}
 
-        {showSolution && solution && (
+        {showSolution && contestDetails && youtubeId && (
           <div className="mt-4">
-            <YoutubeThumbnail videoId={solution.youtubeId} />
+            <YoutubeThumbnail videoId={youtubeId} />
           </div>
         )}
       </CardContent>
