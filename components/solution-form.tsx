@@ -17,17 +17,21 @@ import { Input } from "./ui/input"
 import { updateContestSolution } from "@/lib/api"
 import { motion, AnimatePresence } from "framer-motion"
 import { Check, Loader2 } from "lucide-react"
+import { fetchPastContests } from "@/lib/api"
 
 interface SolutionFormProps {
   contests: Contest[]
 }
 
-export default function SolutionForm({ contests }: SolutionFormProps) {
+export default async function SolutionForm() {
   const [selectedContest, setSelectedContest] = useState<string>("")
   const [youtubeUrl, setYoutubeUrl] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState("")
+
+  const pastContests = await fetchPastContests();
+  const contests = pastContests.filter((contest) => new Date(contest.endTime) < new Date())
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

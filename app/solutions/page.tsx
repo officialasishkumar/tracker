@@ -1,13 +1,11 @@
 import SolutionForm from "@/components/solution-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { fetchPastContests } from "@/lib/api"
 import { Suspense } from "react"
 import SolutionsList from "@/components/solutions-list"
 
 export default async function SolutionsPage() {
-  const contests = await fetchPastContests();
-  const pastContests = contests.filter((contest) => new Date(contest.endTime) < new Date())
+  
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-7xl">
