@@ -9,24 +9,20 @@ async function fetchClistContests(platform) {
         const resourceName = platform === "LeetCode" ? "leetcode.com" : "codechef.com";
         const now = new Date().toISOString();
 
-        // Fetch upcoming contests
         const upcomingUrl = `https://clist.by/api/v2/contest/?resource=${resourceName}&end__gte=${now}&order_by=start`;
         const upcomingResponse = await axios.get(upcomingUrl, {
             headers: { Authorization: clistApiKey }
         });
         const upcomingData = upcomingResponse.data.objects || [];
 
-        // Fetch past contests (limit to 5)
-        const pastUrl = `https://clist.by/api/v2/contest/?resource=${resourceName}&end__lt=${now}&order_by=-start&limit=20`;
+        const pastUrl = `https://clist.by/api/v2/contest/?resource=${resourceName}&end__lt=${now}&order_by=-start&limit=40`;
         const pastResponse = await axios.get(pastUrl, {
             headers: { Authorization: clistApiKey }
         });
         const pastData = pastResponse.data.objects || [];
 
-        // Combine upcoming and past contests
         const contestsData = [...upcomingData, ...pastData];
 
-        // Upsert all contests concurrently
         const upsertPromises = contestsData.map(async (c) => {
             const contestId = c.id.toString();
             const name = c.event;
@@ -50,7 +46,7 @@ async function fetchClistContests(platform) {
                         endTime,
                         duration,
                         url: link,
-                        solution: existingSolution, // preserve any existing YouTube solution link
+                        solution: existingSolution,
                         lastUpdated: new Date()
                     },
                     { upsert: true, new: true }

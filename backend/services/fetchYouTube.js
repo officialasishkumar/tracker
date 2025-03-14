@@ -4,54 +4,64 @@ const Contest = require("../models/contest.model");
 const youtubeApiKey = process.env.YOUTUBE_API_KEY;
 
 async function fetchPlaylistVideos(playlistId, platform) {
-
     console.log(`Fetching videos from ${platform} playlist...`);
     try {
-        // Get the last 5 videos from the specified playlist
-        const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlistId}&maxResults=5&key=${youtubeApiKey}`;
+        // Get the last 20 videos from the specified playlist
+        const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlistId}&maxResults=20&key=${youtubeApiKey}`;
         const response = await axios.get(url);
         const items = response.data.items || [];
 
         for (let item of items) {
-            const title = item.snippet.title;  // e.g. "Leetcode Weekly Contest 439 | Video Solutions ..."
+            const title = item.snippet.title;
             const videoId = item.snippet.resourceId.videoId;
             const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
-            console.log(title)
+            console.log(`Video Title: ${title}`);
 
-            if (title.toLowerCase().includes(platform.toLowerCase())) {
-                if (platform.toLowerCase() === 'leetcode') {
-                    // Use a regex to capture the contest number from the title
+            // LeetCode: use regex to extract the contest number as before.
+            if (platform.toLowerCase() === "leetcode") {
+                if (title.toLowerCase().includes(platform.toLowerCase())) {
                     const regex = /weekly contest (\d+)/i;
                     const match = title.match(regex);
                     if (match) {
                         const contestNumber = match[1];
-                        // Find contest by matching the contest name using the contest number
                         const contest = await Contest.findOne({
-                            platform: 'LeetCode',
-                            name: { $regex: `Weekly Contest\\s*${contestNumber}`, $options: 'i' }
+                            platform: "LeetCode",
+                            name: { $regex: `Weekly Contest\\s*${contestNumber}`, $options: "i" }
                         });
-                        if (contest) {
-                            // Set the solution if not already set
-                            if (!contest.solution) {
-                                contest.solution = videoUrl;
-                                await contest.save();
-                            }
+                        if (contest && !contest.solution) {
+                            contest.solution = videoUrl;
+                            await contest.save();
+                            console.log(`Updated LeetCode contest "${contest.name}" with video ${videoUrl}`);
                         }
                     }
-                } else {
-                    const parts = title.split(" ");
-                    let possibleId = parts[parts.length - 1].replace(/\D/g, "");
-
-                    console.debug(possibleId)
-                    if (possibleId) {
-                        const contest = await Contest.findOne({ platform, contestId: possibleId });
-                        if (contest) {
-                            if (!contest.solution) {
-                                contest.solution = videoUrl;
-                                await contest.save();
-                            }
+                }
+            } else {
+                // For CodeChef and CodeForces, extract the contest number from the title.
+                let regex;
+                if (platform.toLowerCase() === "codechef") {
+                    // Example: "Codechef Starters 177 | Video Solutions ..." will capture "177"
+                    regex = /starters\s+(\d+)/i;
+                } else if (platform.toLowerCase() === "codeforces") {
+                    // Remove bracketed content if any, then extract number after "round".
+                    regex = /round\s+(\d+)/i;
+                }
+                if (regex) {
+                    const match = title.match(regex);
+                    if (match) {
+                        const contestNumber = match[1];  // extracted as string
+                        // Find contest where its name contains the extracted contest number as a whole word
+                        const contest = await Contest.findOne({
+                            platform,
+                            name: { $regex: new RegExp("\\b" + contestNumber + "\\b", "i") }
+                        });
+                        if (contest && !contest.solution) {
+                            contest.solution = videoUrl;
+                            await contest.save();
+                            console.log(`Updated ${platform} contest "${contest.name}" with video ${videoUrl}`);
                         }
+                    } else {
+                        console.debug(`No contest number extracted for title: "${title}"`);
                     }
                 }
             }
@@ -61,14 +71,12 @@ async function fetchPlaylistVideos(playlistId, platform) {
     }
 }
 
-
 async function fetchYouTubeSolutions() {
-    // You can store playlist IDs in your .env
     const leetcodePlaylistId = process.env.LEETCODE_PLAYLIST_ID;
     const codechefPlaylistId = process.env.CODECHEF_PLAYLIST_ID;
     const codeforcesPlaylistId = process.env.CODEFORCES_PLAYLIST_ID;
 
-    // Fetch the last 5 videos from each playlist
+    // Fetch the last 10 videos from each playlist
     if (leetcodePlaylistId) {
         await fetchPlaylistVideos(leetcodePlaylistId, "LeetCode");
     }
