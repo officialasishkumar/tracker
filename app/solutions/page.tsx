@@ -29,7 +29,7 @@ export default async function SolutionsPage() {
               </TabsContent>
 
               <TabsContent value="add">
-                <SolutionForm contests={pastContests} />
+                <SolutionForm />
               </TabsContent>
             </Tabs>
           </CardContent>
