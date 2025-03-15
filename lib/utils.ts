@@ -2,6 +2,7 @@ import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { Code2, Code, FileCode } from "lucide-react"
 import type { TimeLeft } from "./types"
+import type { Contest, Solution } from "./types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -51,3 +52,14 @@ export function getTimeLeft(date: string): TimeLeft | null {
   }
 }
 
+
+// Filter contests by search query (case-insensitive, order-independent)
+export function filterContestsBySearch(contests: Contest[], searchQuery: string): Contest[] {
+  if (!searchQuery.trim()) return contests;
+  const keywords = searchQuery.toLowerCase().split(" ").filter(Boolean);
+  return contests.filter(contest => {
+    // Use contest.name or contest.title as the display title
+    const title = (contest.name || contest.title).toLowerCase();
+    return keywords.every(keyword => title.includes(keyword));
+  });
+}

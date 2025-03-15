@@ -1,11 +1,11 @@
 // components/solutions-list.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import YoutubeThumbnail from "./youtube-thumbnail";
-import { getPlatformColor, getPlatformIcon } from "@/lib/utils";
+import { getPlatformColor, getPlatformIcon, filterContestsBySearch } from "@/lib/utils";
 import { Badge } from "./ui/badge";
 import { fetchAllSolutions } from "@/lib/api";
 import type { Solution } from "@/lib/types";
@@ -19,7 +19,22 @@ function extractYoutubeId(url: string): string | null {
   return match ? match[1] : null;
 }
 
-export default function SolutionsList() {
+// Filter solutions by search query (case-insensitive, order-independent)
+function filterSolutionsBySearch(solutions: Solution[], searchQuery: string): Solution[] {
+  if (!searchQuery.trim()) return solutions;
+  const keywords = searchQuery.toLowerCase().split(" ").filter(Boolean);
+  return solutions.filter(solution => {
+    // Use solution.title or solution.name as the display title
+    const title = (solution.title || solution.name).toLowerCase();
+    return keywords.every(keyword => title.includes(keyword));
+  });
+}
+
+interface SolutionsListProps {
+  searchQuery?: string;
+}
+
+export default function SolutionsList({ searchQuery = "" }: SolutionsListProps) {
   const [solutions, setSolutions] = useState<Solution[]>([]);
 
   useEffect(() => {
@@ -36,17 +51,26 @@ export default function SolutionsList() {
     loadSolutions();
   }, []);
 
-  if (solutions.length === 0) {
+  // Filter solutions based on search query
+  const filteredSolutions = useMemo(() => {
+    return filterSolutionsBySearch(solutions, searchQuery);
+  }, [solutions, searchQuery]);
+
+  if (filteredSolutions.length === 0) {
     return (
       <div className="text-center py-12">
-        <h3 className="text-xl font-medium text-muted-foreground">No solutions available yet</h3>
+        <h3 className="text-xl font-medium text-muted-foreground">
+          {solutions.length === 0
+            ? "No solutions available yet"
+            : "No solutions match your search criteria"}
+        </h3>
       </div>
     );
   }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {solutions.map((solution, index) => {
+      {filteredSolutions.map((solution, index) => {
         const PlatformIcon = getPlatformIcon(solution.platform);
         const platformColor = getPlatformColor(solution.platform);
         // Extract YouTube video ID from the solution URL
