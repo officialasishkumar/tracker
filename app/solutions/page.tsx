@@ -28,11 +28,11 @@ export default function SolutionsPage() {
               <TabsTrigger value="view">View Solutions</TabsTrigger>
               <TabsTrigger value="add">Add Solution</TabsTrigger>
             </TabsList>
-            {/* Place extra UI elements (like SearchBar) inside Tabs but outside of TabsList */}
-            <div className="mb-4">
-              <SearchBar onSearch={setSearchQuery} />
-            </div>
             <TabsContent value="view">
+              {/* Moved the SearchBar here so it's only shown on the view tab */}
+              <div className="mb-4">
+                <SearchBar onSearch={setSearchQuery} />
+              </div>
               <Suspense fallback={<div>Loading solutions...</div>}>
                 <SolutionsList searchQuery={searchQuery} />
               </Suspense>
