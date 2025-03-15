@@ -9,11 +9,10 @@ import { getPlatformColor, getPlatformIcon, filterContestsBySearch } from "@/lib
 import { Badge } from "./ui/badge";
 import { fetchAllSolutions } from "@/lib/api";
 import type { Solution } from "@/lib/types";
+import Skeleton from "./loading-skeleton";
 
 // Helper function to extract YouTube video ID from a URL.
 function extractYoutubeId(url: string): string | null {
-  // Matches standard YouTube URLs (e.g., https://www.youtube.com/watch?v=VIDEOID)
-  // and shortened URLs (e.g., https://youtu.be/VIDEOID)
   const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/;
   const match = url.match(regex);
   return match ? match[1] : null;
@@ -24,7 +23,6 @@ function filterSolutionsBySearch(solutions: Solution[], searchQuery: string): So
   if (!searchQuery.trim()) return solutions;
   const keywords = searchQuery.toLowerCase().split(" ").filter(Boolean);
   return solutions.filter(solution => {
-    // Use solution.title or solution.name as the display title
     const title = (solution.title || solution.name).toLowerCase();
     return keywords.every(keyword => title.includes(keyword));
   });
@@ -36,16 +34,18 @@ interface SolutionsListProps {
 
 export default function SolutionsList({ searchQuery = "" }: SolutionsListProps) {
   const [solutions, setSolutions] = useState<Solution[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadSolutions() {
       try {
         const fetchedSolutions: Solution[] = await fetchAllSolutions();
-        // Ensure we only store contests that have a valid solution URL.
         const filtered = fetchedSolutions.filter((sol) => sol.solution && sol.solution.trim() !== "");
         setSolutions(filtered);
       } catch (error) {
         console.error("Error fetching solutions:", error);
+      } finally {
+        setIsLoading(false);
       }
     }
     loadSolutions();
@@ -55,6 +55,16 @@ export default function SolutionsList({ searchQuery = "" }: SolutionsListProps) 
   const filteredSolutions = useMemo(() => {
     return filterSolutionsBySearch(solutions, searchQuery);
   }, [solutions, searchQuery]);
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <Skeleton key={index} className="h-56 w-full" />
+        ))}
+      </div>
+    );
+  }
 
   if (filteredSolutions.length === 0) {
     return (
@@ -73,10 +83,8 @@ export default function SolutionsList({ searchQuery = "" }: SolutionsListProps) 
       {filteredSolutions.map((solution, index) => {
         const PlatformIcon = getPlatformIcon(solution.platform);
         const platformColor = getPlatformColor(solution.platform);
-        // Extract YouTube video ID from the solution URL
         const youtubeId = extractYoutubeId(solution.solution);
 
-        // Skip rendering if youtubeId could not be extracted
         if (!youtubeId) return null;
 
         return (
