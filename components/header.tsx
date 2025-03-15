@@ -26,20 +26,11 @@ export default function Header() {
         </Link>
 
         <div className="flex items-center gap-4">
-          <nav className="hidden md:flex items-center gap-6">
-            <Link
-              href="/"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                pathname === "/" ? "text-primary" : "text-foreground/60"
-              }`}
-            >
-              Home
-            </Link>
+          <nav className="flex items-center gap-6">
             <Link
               href="/solutions"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                pathname === "/solutions" ? "text-primary" : "text-foreground/60"
-              }`}
+              className={`text-sm font-medium transition-colors hover:text-primary ${pathname === "/solutions" ? "text-primary" : "text-foreground/60"
+                }`}
             >
               Solutions
             </Link>
@@ -58,4 +49,3 @@ export default function Header() {
     </motion.header>
   )
 }
-
