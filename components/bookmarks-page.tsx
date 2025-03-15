@@ -49,8 +49,10 @@ export default function BookmarksPage({ searchQuery = "" }: BookmarksPageProps) 
             );
         }
 
-        // Only bookmarked contests.
-        contests = contests.filter((contest) => Boolean(bookmarkedContests[contest.id]));
+        // Use contest.contestId if available; otherwise fall back to contest.id
+        contests = contests.filter((contest) =>
+            Boolean(bookmarkedContests[contest.contestId || contest.id])
+        );
 
         return filterContestsBySearch(contests, searchQuery);
     }, [loadedContests, selectedPlatforms, bookmarkedContests, searchQuery]);
