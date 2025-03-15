@@ -1,0 +1,25 @@
+.custom-cursor {
+    position: fixed;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.1s ease-out;
+}
+
+.custom-cursor.clicked img {
+    animation: click-animation 0.3s ease-out;
+}
+
+@keyframes click-animation {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(0.8);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
